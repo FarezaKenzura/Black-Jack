@@ -15,15 +15,9 @@ public class GameEventListener : MonoBehaviour
     [Tooltip("Response to invoke when Event with GameData is raised.")]
     public CustomGameEvent response;
 
-    private void OnEnable() 
-    {
-        gameEvent.RegisterListener(this);
-    }
+    private void OnEnable() => gameEvent.RegisterListener(this);
+    private void OnDisable() => gameEvent.UnRegisterListener(this);
 
-    private void OnDisable() 
-    {
-        gameEvent.UnRegisterListener(this);
-    }
 
     public void OnEventRaised(Component sender, object data) 
     {

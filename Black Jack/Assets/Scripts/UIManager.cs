@@ -3,7 +3,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class UIManager : Singleton<UIManager>
+public class UIManager : MonoBehaviour
 {
     [Header("Text Mesh")]
     [SerializeField] private TextMeshProUGUI playerPointText;
@@ -30,10 +30,11 @@ public class UIManager : Singleton<UIManager>
 
     private void Awake()
     {
-        SingletonBuilder(this);
+        SingletonHub.Instance.Register(this);
     }
 
-    private void Start() {
+    private void Start()
+    {
         playerPointText.text = "0";
         dealerPointText.text = "0";
         bidsText.text = "$0";
@@ -46,7 +47,7 @@ public class UIManager : Singleton<UIManager>
 
     private void SetBidding()
     {
-        int bid = (int)(GameManager.Instance.GetMoney() * bidSlidder.value);
+        int bid = (int)(SingletonHub.Instance.Get<GameManager>().GetMoney() * bidSlidder.value);
         biddingText.text = "$" + bid;
     }
 
@@ -55,8 +56,8 @@ public class UIManager : Singleton<UIManager>
         Card[] playerCard = playerCardContainer.GetComponentsInChildren<Card>();
         Card[] dealerCard = dealerCardContainer.GetComponentsInChildren<Card>();
 
-        int playerPoint = GameManager.Instance.GetPoint(playerCard);
-        int dealerPoint = GameManager.Instance.GetPoint(dealerCard);
+        int playerPoint = SingletonHub.Instance.Get<GameManager>().GetPoint(playerCard);
+        int dealerPoint = SingletonHub.Instance.Get<GameManager>().GetPoint(dealerCard);
 
         playerPointText.text = playerPoint.ToString();
         dealerPointText.text = dealerPoint.ToString();
@@ -81,14 +82,14 @@ public class UIManager : Singleton<UIManager>
 
     public void BiddingButton()
     {
-        int bid = (int)(GameManager.Instance.GetMoney() * bidSlidder.value);
-        if(bid == 0)
-           return;
-        
+        int bid = (int)(SingletonHub.Instance.Get<GameManager>().GetMoney() * bidSlidder.value);
+        if (bid == 0)
+            return;
+
         UpdateTextBid(bid);
 
-        GameManager.Instance.GameStart();
-        GameManager.Instance.SetBid(bid);
+        SingletonHub.Instance.Get<GameManager>().GameStart();
+        SingletonHub.Instance.Get<GameManager>().SetBid(bid);
 
         biddingGroup.alpha = 0;
         biddingGroup.interactable = false;
@@ -105,9 +106,9 @@ public class UIManager : Singleton<UIManager>
         gameOverGroup.interactable = true;
         gameOverGroup.blocksRaycasts = true;
 
-        int money = GameManager.Instance.GetMoney();
+        int money = SingletonHub.Instance.Get<GameManager>().GetMoney();
 
-        switch(gameState)
+        switch (gameState)
         {
             case GameState.WIN:
                 chipsText.text = "+$" + bid.ToString();

@@ -3,14 +3,21 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using UnityEngine;
 
+public enum CardState
+{
+    OPEN,
+    CLOSE
+}
+
 public class Card : MonoBehaviour
 {
+    [Header("Card Info")]
     [SerializeField] private CardState currentState = CardState.OPEN;
     [SerializeField] private string cardName;
     [SerializeField] private int cardValue;
 
-    [Header("Sprite")]
-    [SerializeField] SpriteRenderer currentSprite;
+    [Header("Sprites")]
+    [SerializeField] private SpriteRenderer currentSprite;
     [SerializeField] private Sprite cardOpenSprite;
     [SerializeField] private Sprite cardCloseSprite;
 
@@ -25,7 +32,7 @@ public class Card : MonoBehaviour
 
     private void Update()
     {
-        if(movingCard)
+        if (movingCard)
             MovingCard();
     }
 
@@ -46,21 +53,21 @@ public class Card : MonoBehaviour
 
         transform.position = Vector3.Lerp(startMove, endMove, percentageComplete);
 
-        if(percentageComplete >= 1)
+        if (percentageComplete >= 1)
         {
             movingCard = false;
             doneMoving = true;
 
-            if(currentState == CardState.OPEN)
+            if (currentState == CardState.OPEN)
                 OnDoneMovingCard.Raise();
 
-            switch (GameManager.Instance.GetTurnState())
+            switch (SingletonHub.Instance.Get<GameManager>().GetTurnState())
             {
                 case TurnState.PLAYER:
-                    UIManager.Instance.ShowHitStandButton(true);
+                    SingletonHub.Instance.Get<UIManager>().ShowHitStandButton(true);
                     break;
                 case TurnState.DEALER:
-                    GameManager.Instance.GiveDealerCard();
+                    SingletonHub.Instance.Get<GameManager>().GiveDealerCard();
                     break;
             }
         }
@@ -78,7 +85,7 @@ public class Card : MonoBehaviour
 
         InitializeCardValue();
 
-        if(currentState == CardState.CLOSE)
+        if (currentState == CardState.CLOSE)
             CloseCard();
         else
             OpenCard();
@@ -100,13 +107,13 @@ public class Card : MonoBehaviour
             case "Ace":
                 cardValue = 11;
                 break;
-            
+
             case "Jack":
             case "Queen":
             case "King":
                 cardValue = 10;
                 break;
-            
+
             default:
                 cardValue = int.Parse(match.Value);
                 break;
@@ -121,7 +128,7 @@ public class Card : MonoBehaviour
     public void OpenCard()
     {
         currentSprite.sprite = cardOpenSprite;
-        if(doneMoving)
+        if (doneMoving)
             OnDoneMovingCard.Raise();
     }
 }
