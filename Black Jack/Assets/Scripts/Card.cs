@@ -23,12 +23,20 @@ public class Card : MonoBehaviour
 
     [Header("Events")]
     [SerializeField] private GameEvent OnDoneMovingCard;
+    [SerializeField] private float moveSpeed = 6f;
+
+    private static readonly Dictionary<string, int> cardValues = new Dictionary<string, int>()
+    {
+        { "Ace", 11 },
+        { "Jack", 10 },
+        { "Queen", 10 },
+        { "King", 10 }
+    };
 
     private bool doneMoving = false;
     private bool movingCard = false;
-    private Vector3 endMove;
-    private Vector3 startMove;
-    private float progress;
+
+    private Vector3 targetMove;
 
     private void Update()
     {
@@ -38,25 +46,20 @@ public class Card : MonoBehaviour
 
     public void MoveCard(Vector3 target)
     {
-        progress = 0;
-        startMove = transform.position;
-        endMove = target;
+        targetMove = target;
         movingCard = true;
     }
 
     private void MovingCard()
     {
-        progress += Time.deltaTime;
+        transform.position = Vector3.MoveTowards(transform.position, targetMove, moveSpeed * Time.deltaTime);
 
-        float duration = 0.25f;
-        float percentageComplete = progress / duration;
-
-        transform.position = Vector3.Lerp(startMove, endMove, percentageComplete);
-
-        if (percentageComplete >= 1)
+        if (Vector3.Distance(transform.position, targetMove) < 0.001f)
         {
             movingCard = false;
             doneMoving = true;
+
+            transform.position = targetMove;
 
             if (currentState == CardState.OPEN)
                 OnDoneMovingCard.Raise();
@@ -93,31 +96,33 @@ public class Card : MonoBehaviour
 
     private string CleanCardName(string input)
     {
-        string cleanedString = Regex.Replace(input, @"(Poker Card|\(Clone\))", "").Trim();
-        return cleanedString;
+        string result = input.Replace("Poker Card", "")
+                         .Replace("(Clone)", "")
+                         .Trim();
+
+        return result;
     }
 
     private void InitializeCardValue()
     {
-        cardName = CleanCardName(cardOpenSprite.name);
-        Match match = Regex.Match(cardName, @"\b(?:[2-9]|10|Jack|Queen|King|Ace)\b", RegexOptions.IgnoreCase);
+        string cleaned = CleanCardName(cardOpenSprite.name);
 
-        switch (match.Value)
+        string[] parts = cleaned.Split(' ');
+        string rank = parts[0];
+
+        if (cardValues.TryGetValue(rank, out int value))
         {
-            case "Ace":
-                cardValue = 11;
-                break;
-
-            case "Jack":
-            case "Queen":
-            case "King":
-                cardValue = 10;
-                break;
-
-            default:
-                cardValue = int.Parse(match.Value);
-                break;
+            cardValue = value;
         }
+        else
+        {
+            if (int.TryParse(rank, out int numberValue))
+                cardValue = numberValue;
+            else
+                cardValue = 0;
+        }
+
+        cardName = cleaned;
     }
 
     public void SetCardState(CardState cardState) => currentState = cardState;

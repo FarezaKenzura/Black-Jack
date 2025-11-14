@@ -54,7 +54,8 @@ public class GameManager : MonoBehaviour
 
     public void GameStart()
     {
-        cardDeck.ShuffleDeck();
+        cardDeck.BuildDeck();
+        cardDeck.Shuffle();
         StartCoroutine(GivingCards());
     }
 

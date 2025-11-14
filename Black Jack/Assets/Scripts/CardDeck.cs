@@ -3,26 +3,35 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.U2D;
 
-public class CardDeck : MonoBehaviour 
+public class CardDeck : MonoBehaviour
 {
     [SerializeField] private SpriteAtlas atlas;
-    [SerializeField] private List<Sprite> cardDeck;
+    [SerializeField] private List<Sprite> cardDeck = new List<Sprite>();
 
-    public void ShuffleDeck()
+    public void BuildDeck()
     {
-        Sprite[] cardArray = new Sprite[atlas.spriteCount];
+        cardDeck.Clear();
+
+        int count = atlas.spriteCount;
+        Sprite[] cardArray = new Sprite[count];
+
         atlas.GetSprites(cardArray);
 
-        for (int i = 0; i < cardArray.Length; i++)
+        cardDeck.AddRange(cardArray);
+    }
+
+    public void Shuffle()
+    {
+        int n = cardDeck.Count;
+
+        for (int i = n - 1; i > 0; i--)
         {
-            int randomNumber = Random.Range(0, cardArray.Length);
+            int randomIndex = Random.Range(0, i + 1);
 
-            Sprite temp = cardArray[randomNumber];
-            cardArray[randomNumber] = cardArray[i];
-            cardArray[i] = temp;
+            Sprite temp = cardDeck[i];
+            cardDeck[i] = cardDeck[randomIndex];
+            cardDeck[randomIndex] = temp;
         }
-
-        cardDeck = cardArray.ToList();
     }
 
     public Sprite GetCard()
